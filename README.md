@@ -10,43 +10,52 @@ npm install TO_BE_DETERMINED
 
 ## Usage
 
+### Importing
+
+Utility function
+
+```typescript
+import tryCatch from 'TO_BE_DETERMINED';
+```
+
+Types
+
+```typescript
+import { ErrorType, TryCatchResult } from 'TO_BE_DETERMINED';
+```
+
 ### Synchronous Functions
 
 The `tryCatch` function can be used to safely execute synchronous functions, catching errors as needed.
 
 ```typescript
-import tryCatch, { ErrorType } from "TO_BE_DETERMINED";
-
 class CustomError extends Error {}
 
-const syncReturnOrThrow = (i: number = 0, errorClass: ErrorType = Error) => {
-  if (i === 0) {
-    throw new errorClass(errorClass.name);
-  }
-
-  return i;
-};
-
 // Catching a general Error
-const [err1] = tryCatch(syncReturnOrThrow);
-if (err1) {
-  console.error(err1.message); // "Error"
-}
+const [err1] = tryCatch((): void => {
+  throw new Error('Message');
+});
+console.error(err1.message); // "Message"
 
-// Catching only a specific CustomError. Any error of a different type will not be caught; instead, it will be re-thrown.
-const [err2] = tryCatch(() => syncReturnOrThrow(0, CustomError)), [CustomError]);
-if (err2) {
-  console.error(err2.message); // "CustomError"
-}
+// Catching only a specific CustomError.
+const [err2] = tryCatch((): void => {
+  throw new CustomError('Custom message');
+}), [CustomError]);
+console.error(err2.message); // "Custom message"
 
-// This will throw Error.
-tryCatch(() => syncReturnOrThrow(0, Error)), [CustomError]);
+// Any error of a different type will not be caught; instead, it will be re-thrown.
+// This will throw Error
+tryCatch((): void => {
+  throw new Error('Message');
+}), [CustomError]);
 
-// This will too
-tryCatch(() => syncReturnOrThrow(0, CustomError)), [Error]);
+// This will throw CustomError
+tryCatch((): void => {
+  throw new CustomError('Custom message');
+}), [Error]);
 
 // Returning value without error
-const [err3, value] = tryCatch(() => syncReturnOrThrow(1));
+const [err3, value] = tryCatch(() => 1);
 console.log(value); // 1
 
 ```
@@ -56,36 +65,25 @@ console.log(value); // 1
 The utility also works with asynchronous functions, returning promises that can be awaited.
 
 ```typescript
-import tryCatch, { ErrorType } from "TO_BE_DETERMINED";
-
-const asyncReturnOrThrow = async (i: number = 0, errorClass: ErrorType = Error) => {
-  if (i === 0) {
-    throw new errorClass(errorClass.name);
-  }
-
-  return i;
-};
+class CustomError extends Error {}
 
 // Catching a general Error in an async function
-const [asyncErr1] = await tryCatch(asyncReturnOrThrow);
-if (asyncErr1) {
-  console.error(asyncErr1.message); // "Error"
-}
+const [asyncErr1] = await tryCatch(() => Promise.reject(new Error('Message')));
+console.error(asyncErr1.message); // "Message"
 
-// Catching only a specific CustomError. Any error of a different type will not be caught; instead, it will be re-thrown.
-const [asyncErr2] = await tryCatch(() => asyncReturnOrThrow(0, CustomError), [CustomError]);
-if (asyncErr2) {
-  console.error(asyncErr2.message); // "CustomError"
-}
+// Catching only a specific CustomError.
+const [asyncErr2] = await tryCatch(() => Promise.reject(new CustomError('Custom message')), [CustomError]);
+console.error(asyncErr2.message); // "Custom message"
 
+// Any error of a different type will not be caught; instead, it will be re-thrown.
 // This will throw Error.
-await tryCatch(() => asyncReturnOrThrow(0, Error)), [CustomError]);
+await tryCatch(() => Promise.reject(new Error('Message'))), [CustomError]);
 
-// This will too.
-await tryCatch(() => asyncReturnOrThrow(0, CustomError)), [Error]);
+// This will throw CustomError
+await tryCatch(() => Promise.reject(new CustomError('Custom message')), [Error]);
 
 // Returning value without error in an async function
-const [asyncErr3, asyncValue] = await tryCatch(() => asyncReturnOrThrow(1));
+const [asyncErr3, asyncValue] = await tryCatch(() => Promise.resolve(1));
 console.log(asyncValue); // 1
 ```
 

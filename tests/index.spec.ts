@@ -11,58 +11,72 @@ describe('tryCatch', () => {
     errorClass: ErrorType = Error,
   ) => {
     expect(error).toBeInstanceOf(errorClass);
+    expect((error as E).constructor.name).toBe(errorClass.name);
     expect((error as E).message).toBe(expectedMessage);
   };
 
   describe('sync', () => {
-    const syncReturnOrThrow = (
-      i: number = 0,
-      errorClass: ErrorType = Error,
-    ) => {
-      if (i === 0) {
-        throw new errorClass(errorClass.name);
-      }
-
-      return i;
-    };
-
     it('catches generic Error when no specific error type is provided', () => {
-      const [err] = tryCatch(syncReturnOrThrow);
+      const [err] = tryCatch((): void => {
+        throw new Error('Error Message');
+      });
 
-      expectError(err, 'Error');
+      expectError(err, 'Error Message');
     });
 
     it('catches generic Error with an empty error list', () => {
-      const [err] = tryCatch(syncReturnOrThrow, []);
+      const [err] = tryCatch((): void => {
+        throw new Error('Error Message');
+      }, []);
 
-      expectError(err, 'Error');
+      expectError(err, 'Error Message');
 
-      const [err2] = tryCatch(syncReturnOrThrow, []);
+      const [err2] = tryCatch((): void => {
+        throw new CustomError('Custom Error Message');
+      }, []);
 
-      expectError(err2, 'Error');
+      expectError(err2, 'Custom Error Message', CustomError);
     });
 
-    it('catches only matching Error type when error list provided', () => {
-      const [err] = tryCatch(
-        () => syncReturnOrThrow(0, CustomError),
-        [CustomError],
-      );
+    it('catches matching Error type when error list provided', () => {
+      const [err1] = tryCatch((): void => {
+        throw new CustomError('Custom Error Message');
+      }, [CustomError]);
 
-      expectError(err, 'CustomError', CustomError);
-
-      expect(() => tryCatch(syncReturnOrThrow, [CustomError])).toThrow('Error');
+      expectError(err1, 'Custom Error Message', CustomError);
       expect(() =>
-        tryCatch(() => syncReturnOrThrow(0, CustomError), [Error]),
-      ).toThrow('CustomError');
+        tryCatch((): void => {
+          throw new CustomError('Custom Error Message');
+        }, [CustomError]),
+      ).not.toThrow();
 
-      expect(() => tryCatch(syncReturnOrThrow, [Error])).not.toThrow();
+      const [err2] = tryCatch((): void => {
+        throw new Error('Error Message');
+      }, [Error]);
+
+      expectError(err2, 'Error Message', Error);
       expect(() =>
-        tryCatch(() => syncReturnOrThrow(0, CustomError), [CustomError]),
+        tryCatch((): void => {
+          throw new Error('Error Message');
+        }, [Error]),
       ).not.toThrow();
     });
 
+    it('rethrows errors not on the catch list', () => {
+      expect(() =>
+        tryCatch((): void => {
+          throw new Error('Error Message');
+        }, [CustomError]),
+      ).toThrow('Error Message');
+      expect(() =>
+        tryCatch((): void => {
+          throw new CustomError('Custom Error Message');
+        }, [Error]),
+      ).toThrow('Custom Error Message');
+    });
+
     it("returns the function's return value when no error is thrown", () => {
-      const [err, value] = tryCatch(() => syncReturnOrThrow(1));
+      const [err, value] = tryCatch(() => 1);
 
       expect(err).toBeUndefined();
       expect(value).toBe(1);
@@ -70,58 +84,72 @@ describe('tryCatch', () => {
   });
 
   describe('async', () => {
-    const asyncReturnOrThrow = async (
-      i: number = 0,
-      errorClass: ErrorType = Error,
-    ) => {
-      if (i === 0) {
-        throw new errorClass(errorClass.name);
-      }
-
-      return i;
-    };
-
     it('catches generic Error when no specific error type is provided', async () => {
-      const [err] = await tryCatch(asyncReturnOrThrow);
+      const [err] = await tryCatch(() =>
+        Promise.reject(new Error('Error Message')),
+      );
 
-      expectError(err, 'Error');
+      expectError(err, 'Error Message');
     });
 
     it('catches generic Error with an empty error list', async () => {
-      const [err] = await tryCatch(asyncReturnOrThrow, []);
+      const [err] = await tryCatch(
+        () => Promise.reject(new Error('Error Message')),
+        [],
+      );
 
-      expectError(err, 'Error');
+      expectError(err, 'Error Message');
 
-      const [err2] = await tryCatch(asyncReturnOrThrow, []);
+      const [err2] = await tryCatch(
+        () => Promise.reject(new CustomError('Custom Error Message')),
+        [],
+      );
 
-      expectError(err2, 'Error');
+      expectError(err2, 'Custom Error Message', CustomError);
     });
 
-    it('catches only matching Error type when error list provided', async () => {
-      const [err] = await tryCatch(
-        () => asyncReturnOrThrow(0, CustomError),
+    it('catches matching Error type when error list provided', async () => {
+      const [err1] = await tryCatch(
+        () => Promise.reject(new CustomError('Custom Error Message')),
         [CustomError],
       );
 
-      expectError(err, 'CustomError', CustomError);
+      expectError(err1, 'Custom Error Message', CustomError);
+      await expect(
+        tryCatch(
+          () => Promise.reject(new CustomError('Custom Error Message')),
+          [CustomError],
+        ),
+      ).resolves.toEqual([new CustomError('Custom Error Message')]);
 
-      await expect(tryCatch(asyncReturnOrThrow, [CustomError])).rejects.toThrow(
-        'Error',
+      const [err2] = await tryCatch(
+        () => Promise.reject(new Error('Error Message')),
+        [Error],
       );
-      await expect(
-        tryCatch(() => asyncReturnOrThrow(0, CustomError), [Error]),
-      ).rejects.toThrow('CustomError');
 
-      await expect(tryCatch(asyncReturnOrThrow, [Error])).resolves.toEqual([
-        new Error('Error'),
-      ]);
+      expectError(err2, 'Error Message', Error);
       await expect(
-        tryCatch(() => asyncReturnOrThrow(0, CustomError), [CustomError]),
-      ).resolves.toEqual([new CustomError('CustomError')]);
+        tryCatch(() => Promise.reject(new Error('Error Message')), [Error]),
+      ).resolves.toEqual([new Error('Error Message')]);
+    });
+
+    it('rethrows errors not on the catch list', async () => {
+      await expect(
+        tryCatch(
+          () => Promise.reject(new Error('Error Message')),
+          [CustomError],
+        ),
+      ).rejects.toThrow('Error Message');
+      await expect(
+        tryCatch(
+          () => Promise.reject(new CustomError('Custom Error Message')),
+          [Error],
+        ),
+      ).rejects.toThrow('Custom Error Message');
     });
 
     it("returns the function's resolved value when no error is thrown", async () => {
-      const [err, value] = await tryCatch(() => asyncReturnOrThrow(1));
+      const [err, value] = await tryCatch(() => Promise.resolve(1));
 
       expect(err).toBeUndefined();
       expect(value).toBe(1);
