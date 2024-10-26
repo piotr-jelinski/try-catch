@@ -2,10 +2,14 @@
 
 A TypeScript utility to handle errors for both synchronous and asynchronous functions without needing try-catch blocks.
 
+## Github Page
+
+[https://github.com/piotr-jelinski/try-catch](https://github.com/piotr-jelinski/try-catch)
+
 ## Installation
 
 ```bash
-npm install TO_BE_DETERMINED
+npm install @pjelinski/try-catch
 ```
 
 ## Usage
@@ -15,13 +19,13 @@ npm install TO_BE_DETERMINED
 Utility function
 
 ```typescript
-import tryCatch from 'TO_BE_DETERMINED';
+import tryCatch from '@pjelinski/try-catch';
 ```
 
 Types
 
 ```typescript
-import { ErrorType, TryCatchResult } from 'TO_BE_DETERMINED';
+import { ErrorType, TryCatchResult } from '@pjelinski/try-catch';
 ```
 
 ### Synchronous Functions
