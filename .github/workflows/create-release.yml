@@ -6,6 +6,12 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   release:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/master' }}
