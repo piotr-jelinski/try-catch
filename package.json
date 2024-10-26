@@ -1,6 +1,6 @@
 {
   "name": "@pjelinski/try-catch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -14,10 +14,32 @@
     "prepublish": "npm run build",
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": [
+    "error handling",
+    "async",
+    "sync",
+    "utility",
+    "typescript"
+  ],
   "author": "Piotr Jelinski",
   "license": "MIT",
   "description": "A utility for handling errors in both sync and async functions with less boilerplate.",
+  "homepage": "https://github.com/piotr-jelinski/try-catch#readme",
+  "bugs": {
+    "url": "https://github.com/piotr-jelinski/try-catch/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/piotr-jelinski/try-catch.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
