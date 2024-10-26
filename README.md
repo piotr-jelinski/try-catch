@@ -91,6 +91,10 @@ const [asyncErr3, asyncValue] = await tryCatch(() => Promise.resolve(1));
 console.log(asyncValue); // 1
 ```
 
+### Handling Non-Error Values in Throws
+
+Thrown values such as numbers, strings, objects, or any other type that is not an instance of Error will not be caught; you must handle them yourself.
+
 ## License
 
 This project is licensed under the MIT License.

@@ -7,16 +7,18 @@ export type TryCatchResult<T, E extends ErrorType> =
 
 function returnCatchAbleErrorOrThrow<E extends ErrorType>(
   // this is an actual instance, so it has a constructor
-  error: Error,
+  error: unknown,
   // this is but a list of types, no actual instances
   errToCatch?: E[],
 ): [InstanceType<E>] {
   if (
-    !errToCatch ||
-    errToCatch.length === 0 ||
-    errToCatch.some(
-      (e) => error instanceof e && error.constructor.name === e.name,
-    )
+    // if you like to throw non Error values, just handle them yourself depending on the need :)
+    error instanceof Error &&
+    (!errToCatch ||
+      errToCatch.length === 0 ||
+      errToCatch.some(
+        (e) => error instanceof e && error.constructor.name === e.name,
+      ))
   ) {
     return [error as InstanceType<E>];
   }

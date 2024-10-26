@@ -75,6 +75,34 @@ describe('tryCatch', () => {
       ).toThrow('Custom Error Message');
     });
 
+    it('rethrows if something else than Error was thrown', () => {
+      expect(() =>
+        tryCatch((): void => {
+          throw 1;
+        }),
+      ).toThrow();
+      expect(() =>
+        tryCatch((): void => {
+          throw 'string';
+        }),
+      ).toThrow();
+      expect(() =>
+        tryCatch((): void => {
+          throw true;
+        }),
+      ).toThrow();
+      expect(() =>
+        tryCatch((): void => {
+          throw {};
+        }),
+      ).toThrow();
+      expect(() =>
+        tryCatch((): void => {
+          throw null;
+        }),
+      ).toThrow();
+    });
+
     it("returns the function's return value when no error is thrown", () => {
       const [err, value] = tryCatch(() => 1);
 
@@ -146,6 +174,34 @@ describe('tryCatch', () => {
           [Error],
         ),
       ).rejects.toThrow('Custom Error Message');
+    });
+
+    it('rejects if something else than Error was thrown', async () => {
+      await expect(() =>
+        tryCatch(async () => {
+          throw 1;
+        }),
+      ).rejects.toEqual(1);
+      await expect(() =>
+        tryCatch(async () => {
+          throw 'string';
+        }),
+      ).rejects.toEqual('string');
+      await expect(() =>
+        tryCatch(async () => {
+          throw true;
+        }),
+      ).rejects.toEqual(true);
+      await expect(() =>
+        tryCatch(async () => {
+          throw {};
+        }),
+      ).rejects.toEqual({});
+      await expect(() =>
+        tryCatch(async () => {
+          throw null;
+        }),
+      ).rejects.toEqual(null);
     });
 
     it("returns the function's resolved value when no error is thrown", async () => {
