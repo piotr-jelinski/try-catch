@@ -31,7 +31,7 @@ jobs:
         run: npm run build:check
 
       - name: Tests and Coverage Check
-        run: npm coverage --coverageThreshold="{\"global\":{\"branches\":100,\"functions\":100,\"lines\":100,\"statements\":100}}"
+        run: npm run coverage --coverageThreshold="{\"global\":{\"branches\":100,\"functions\":100,\"lines\":100,\"statements\":100}}"
 
       - name: Stop depending actions if errors
         if: failure()
