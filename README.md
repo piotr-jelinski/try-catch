@@ -197,7 +197,7 @@ const [error, result] = tryCatch(() => {
   return 'Success!';
 });
 if (error) {
-  console.error('Caught Error', error);
+  console.error('Caught MyClass', error);
   // stop code from executing
 }
 // handle result
