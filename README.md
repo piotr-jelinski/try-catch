@@ -93,19 +93,19 @@ export type TryCatchResult<T> = [undefined, T] | [unknown];
 
 The package includes the following built-in CatchCondition functions:
 
-- isArrayThrown: Checks if the thrown error is an array.
-- isBigIntThrown: Checks if the thrown error is a BigInt.
-- isBooleanThrown: Checks if the thrown error is a boolean.
-- isErrorThrown: Checks if the thrown error is a plain Error object (i.e., not a custom error class).
-- isFunctionThrown: Checks if the thrown error is a function.
-- isInstanceOfErrorThrown: Checks if the thrown error is an instance of Error or any class extending Error.
-- isNullThrown: Checks if the thrown error is null.
-- isNumberThrown: Checks if the thrown error is a number.
-- isObjectThrown: Checks if the thrown error is a plain object (i.e., not an instance of a class).
-- isStringThrown: Checks if the thrown error is a string.
-- isSymbolThrown: Checks if the thrown error is a symbol.
-- isTypeOfObjectThrown: Checks if the thrown error is an object of any type, excluding null.
-- isUndefinedThrown: Checks if the thrown error is undefined.
+- `isArrayThrown`: Checks if the thrown error is an array.
+- `isBigIntThrown`: Checks if the thrown error is a BigInt.
+- `isBooleanThrown`: Checks if the thrown error is a boolean.
+- `isErrorThrown`: Checks if the thrown error is a plain Error object (i.e., not a custom error class).
+- `isFunctionThrown`: Checks if the thrown error is a function.
+- `isInstanceOfErrorThrown`: Checks if the thrown error is an instance of Error or any class extending Error.
+- `isNullThrown`: Checks if the thrown error is null.
+- `isNumberThrown`: Checks if the thrown error is a number.
+- `isObjectThrown`: Checks if the thrown error is a plain object (i.e., not an instance of a class).
+- `isStringThrown`: Checks if the thrown error is a string.
+- `isSymbolThrown`: Checks if the thrown error is a symbol.
+- `isTypeOfObjectThrown`: Checks if the thrown error is an object of any type, excluding null.
+- `isUndefinedThrown`: Checks if the thrown error is undefined.
 
 Additionally, you can create custom catch conditions using the following factory function:
 
@@ -140,32 +140,76 @@ If an error does not match any of the provided catchConditions, it is rethrown.
 
 ### Example Usage
 
-Catching CustomError or Error
+Catching All kinds of Error
 
 ```typescript
-import tryCatch, { isInstanceOfErrorThrown } from '@pjelinski/try-catch';
+import tryCatch from '@pjelinski/try-catch';
 
 class CustomError extends Error {}
 
-const [error] = tryCatch(() => {
-  throw new CustomError('Something went wrong');
-}, [isInstanceOfErrorThrown]);
+const [error, result] = tryCatch(() => {
+  if (Math.random() < 0.5) {
+    throw new CustomError('Something went wrong');
+  }
+
+  return 'Success!';
+});
+
 if (error) {
   console.error('Caught CustomError', error);
+  // stop code from executing
 }
+// handle result
 
-const [error] = tryCatch(() => {
-  throw new Error('Something went wrong');
-}, [isInstanceOfErrorThrown]);
+const [error, result] = tryCatch(() => {
+  if (Math.random() < 0.5) {
+    throw new Error('Something went wrong');
+  }
+
+  return 'Success!';
+});
 if (error) {
   console.error('Caught Error', error);
+  // stop code from executing
 }
+// handle result
+
+const [error, result] = tryCatch(() => {
+  if (Math.random() < 0.5) {
+    throw 'Error';
+  }
+
+  return 'Success!';
+});
+if (error) {
+  console.error('Caught Error', error);
+  // stop code from executing
+}
+// handle result
+
+class MyClass = {}
+
+const [error, result] = tryCatch(() => {
+  if (Math.random() < 0.5) {
+    throw new MyClass();
+  }
+
+  return 'Success!';
+});
+if (error) {
+  console.error('Caught Error', error);
+  // stop code from executing
+}
+// handle result
 ```
 
-Not catching CustomError
+Not specific type of error only
 
 ```typescript
-import tryCatch, { isErrorThrown } from '@pjelinski/try-catch';
+import tryCatch, {
+  isErrorThrown,
+  isInstanceOfErrorThrown,
+} from '@pjelinski/try-catch';
 
 class CustomError extends Error {}
 
@@ -174,20 +218,21 @@ try {
     throw new CustomError('Something went wrong');
   }, [isErrorThrown]);
 } catch (error: unknown) {
-  console.error('Custom Error was not caught but thrown instead', error);
+  console.error('CustomError was not caught but thrown instead', error);
 }
-```
-
-Catching strictly Error
-
-```typescript
-import tryCatch, { isErrorThrown } from '@pjelinski/try-catch';
 
 const [error] = tryCatch(() => {
   throw new Error('Something went wrong');
 }, [isErrorThrown]);
 if (error) {
   console.error('Caught Error', error);
+}
+
+const [error] = tryCatch(() => {
+  throw new CustomError('Something went wrong');
+}, [isInstanceOfErrorThrown]);
+if (error) {
+  console.error('Caught CustomError', error);
 }
 ```
 
@@ -200,14 +245,73 @@ class MyCustomClass {}
 
 const isMyCustomClassThrown = createCatchCondition(MyCustomClass);
 
-const [error, result] = tryCatch(() => {
+const [error] = tryCatch(() => {
   throw new MyCustomClass();
 }, [isMyCustomClassThrown]);
 
 if (error) {
   console.log('Caught an instance of MyCustomClass');
 }
+
+try {
+  tryCatch(() => {
+    throw new Error('Something went wrong');
+  }, [isMyCustomClassThrown]);
+} catch (error: unknown) {
+  console.error('Error was not caught but thrown instead', error);
+}
 ```
+
+Catching async function call
+
+```typescript
+const [error, result] = await tryCatch(async () => {
+  return await someAsyncFunctionThatMayThrow();
+});
+
+if (error) {
+  console.log('Caught an error', error);
+}
+
+// handle result
+```
+
+## Changelog
+
+v2.x
+
+- **Updated error-catching approach:** The implementation now uses `CatchCondition[]` instead of the previous `ErrorType[]`, enabling more flexible and granular error matching.
+- **New built-in catch conditions:** Added conditions for catching thrown values such as arrays, primitive types (number, boolean, string, etc.), functions, and null/undefined.
+- **Custom error matching:** Introduced `createCatchCondition` to easily create custom conditions for class-based errors.
+- **Improved return handling:** Return values are now accessible consistently across all blocks (try, catch, and finally) due to external variable declaration.
+- **Code cleanup and refactoring:** The codebase was restructured for enhanced readability and maintainability.
+
+## Version History
+
+v1.x
+
+- Initial implementation using `ErrorType[]` to catch errors of specific types.
+- Supported both synchronous and asynchronous functions with basic error handling.
+- Lacked flexibility in catching non-`Error` values and primitive types.
+- Scoping issues in error handling and variable declaration inside try-catch-finally blocks.
+
+v2.x
+
+- Replaced `ErrorType[]` with `CatchCondition[]`, offering more precise error handling based on custom conditions.
+- Added built-in conditions to catch arrays, primitive values, functions, null/undefined, and more.
+- Introduced `createCatchCondition` utility for creating custom class-based error-catching logic.
+- Simplified error handling by ensuring consistent access to return values across all blocks.
+- Enhanced code structure and modularity for better maintainability.
+
+## Breaking Changes
+
+The new implementation of `tryCatch` replaces the old `ErrorType[]` approach with a more flexible array of `CatchCondition[]` functions. This change introduces the following key improvements:
+
+1. **Enhanced Error Matching Flexibility:** Catch conditions allow fine-grained control to handle any type of thrown value, including primitives, arrays, plain objects, and custom classes. This eliminates the previous limitation of handling only specific `Error` classes and makes error matching more versatile.
+
+2. **Simplified API and Improved Consistency:** By using catch conditions instead of error classes, the API is streamlined, reducing complexity while improving predictability. This change ensures that error handling is consistently applied across various thrown types without requiring additional logic or manual error checks.
+
+These changes result in a more powerful and user-friendly error handling experience, allowing developers to create customized conditions for any thrown value while maintaining a clear and concise API.
 
 ## License
 
