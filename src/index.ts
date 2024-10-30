@@ -1,58 +1,97 @@
 'use strict';
 
-export type ErrorType = new (message?: string) => Error;
-export type TryCatchResult<T, E extends ErrorType> =
-  | [undefined, T]
-  | [InstanceType<E>];
+export type CatchCondition = (error: unknown) => boolean;
+export type TryCatchResult<T> = [undefined, T] | [unknown];
 
-function returnCatchAbleErrorOrThrow<E extends ErrorType>(
-  // this is an actual instance, so it has a constructor
+export const isArrayThrown: CatchCondition = (error: unknown): boolean =>
+  Array.isArray(error);
+
+export const isBigIntThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'bigint';
+
+export const isBooleanThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'boolean';
+
+export const isErrorThrown: CatchCondition = (error: unknown): boolean =>
+  error instanceof Error && Object.getPrototypeOf(error) === Error.prototype;
+
+export const isFunctionThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'function';
+
+export const isInstanceOfErrorThrown: CatchCondition = (
   error: unknown,
-  // this is but a list of types, no actual instances
-  errToCatch?: E[],
-): [InstanceType<E>] {
+): boolean => error instanceof Error;
+
+export const isNullThrown: CatchCondition = (error: unknown): boolean =>
+  error === null;
+
+export const isNumberThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'number';
+
+export const isObjectThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'object' &&
+  error !== null &&
+  error.constructor === Object &&
+  Object.getPrototypeOf(error) === Object.prototype;
+
+export const isStringThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'string';
+
+export const isSymbolThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'symbol';
+
+export const isTypeOfObjectThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null;
+
+export const isUndefinedThrown: CatchCondition = (error: unknown): boolean =>
+  typeof error === 'undefined';
+
+export const makeIsInstanceOfThrown =
+  <E extends new (...args: any[]) => any>(ClassName: E): CatchCondition =>
+  (error: unknown): boolean =>
+    error instanceof ClassName;
+
+function returnCatchAbleErrorOrThrow(
+  error: unknown,
+  catchConditions: CatchCondition[],
+): [unknown] {
   if (
-    // if you like to throw non Error values, just handle them yourself depending on the need :)
-    error instanceof Error &&
-    (!errToCatch ||
-      errToCatch.length === 0 ||
-      errToCatch.some(
-        (e) => error instanceof e && error.constructor.name === e.name,
-      ))
+    catchConditions.length === 0 ||
+    catchConditions.some((cond) => cond(error))
   ) {
-    return [error as InstanceType<E>];
+    return [error];
   }
 
   throw error;
 }
 
 // overloads to support both sync and async functions and return the correct type based on the input
-export default function tryCatch<T, E extends ErrorType>(
+export default function tryCatch<T>(
   fn: () => Promise<T>,
-  errToCatch?: E[],
-): Promise<TryCatchResult<T, E>>;
-export default function tryCatch<T, E extends ErrorType>(
+  catchConditions?: CatchCondition[],
+): Promise<TryCatchResult<T>>;
+export default function tryCatch<T>(
   fn: () => T,
-  errToCatch?: E[],
-): TryCatchResult<T, E>;
-export default function tryCatch<T, E extends ErrorType>(
+  catchConditions?: CatchCondition[],
+): TryCatchResult<T>;
+export default function tryCatch<T>(
   fn: () => T | Promise<T>,
-  errToCatch?: E[],
-): TryCatchResult<T, E> | Promise<TryCatchResult<T, E>> {
+  catchConditions: CatchCondition[] = [],
+): TryCatchResult<T> | Promise<TryCatchResult<T>> {
   try {
     const result = fn();
 
     if (result instanceof Promise) {
       return result
-        .then((res): TryCatchResult<T, E> => [undefined, res])
+        .then((res): TryCatchResult<T> => [undefined, res])
         .catch(
-          (err: unknown): TryCatchResult<T, E> =>
-            returnCatchAbleErrorOrThrow<E>(err as Error, errToCatch),
+          (maybeError: unknown): TryCatchResult<T> =>
+            returnCatchAbleErrorOrThrow(maybeError, catchConditions),
         );
     }
 
     return [undefined, result];
-  } catch (error: unknown) {
-    return returnCatchAbleErrorOrThrow<E>(error as Error, errToCatch);
+  } catch (maybeError: unknown) {
+    return returnCatchAbleErrorOrThrow(maybeError, catchConditions);
   }
 }
