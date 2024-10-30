@@ -1,6 +1,6 @@
 ## Overview
 
-This package provides a utility function called tryCatch which simplifies error handling by allowing you to specify conditions under which errors are caught. It also provides a set of pre-defined catch conditions and a factory function to create custom catch conditions based on class instances.
+This package provides a utility function called `tryCatch` which simplifies error handling by allowing you to specify conditions under which errors are caught. It also provides a set of pre-defined catch conditions and a factory function to create custom catch conditions based on class instances.
 
 ## Github Page
 
@@ -109,7 +109,7 @@ The package includes the following built-in CatchCondition functions:
 
 Additionally, you can create custom catch conditions using the following factory function:
 
-- createCatchCondition: Creates a CatchCondition that checks if the thrown error is an instance of a specified class.
+- `createCatchCondition`: Creates a `CatchCondition` that checks if the thrown error is an instance of a specified class.
 
 ## `tryCatch` Function
 
@@ -129,14 +129,14 @@ export default function tryCatch<T>(
 
 ### Function Description
 
-The tryCatch function accepts a synchronous or asynchronous function fn, executes it, and catches any thrown errors based on the provided catchConditions. If no catchConditions are provided, all thrown errors will be caught.
+The `tryCatch` function accepts a synchronous or asynchronous function `fn`, executes it, and catches any thrown errors based on the provided `catchConditions`. If no `catchConditions` are provided, all thrown errors will be caught.
 
 The function returns a result in the form of a tuple:
 
-- If the function fn executes successfully, the returned tuple is [undefined, result], where result is the value returned by fn.
-- If an error is caught, the returned tuple is [error].
+- If the function `fn` executes successfully, the returned tuple is `[undefined, result]`, where `result` is the value returned by `fn`.
+- If an error is caught, the returned tuple is `[error]`.
 
-If an error does not match any of the provided catchConditions, it is rethrown.
+If an error does not match any of the provided `catchConditions`, it is rethrown.
 
 ### Example Usage
 
@@ -203,7 +203,7 @@ if (error) {
 // handle result
 ```
 
-Not specific type of error only
+Catch specific type of error only
 
 ```typescript
 import tryCatch, {
