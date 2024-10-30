@@ -5,6 +5,8 @@ on:
     workflows: ['Run Checks']
     types:
       - completed
+    branches:
+      - master
 
 permissions:
   contents: write
