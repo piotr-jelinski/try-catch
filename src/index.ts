@@ -46,7 +46,7 @@ export const isTypeOfObjectThrown: CatchCondition = (error: unknown): boolean =>
 export const isUndefinedThrown: CatchCondition = (error: unknown): boolean =>
   typeof error === 'undefined';
 
-export const makeIsInstanceOfThrown =
+export const createCatchCondition =
   <E extends new (...args: any[]) => any>(ClassName: E): CatchCondition =>
   (error: unknown): boolean =>
     error instanceof ClassName;

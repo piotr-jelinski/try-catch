@@ -12,7 +12,7 @@ import tryCatch, {
   isStringThrown,
   isSymbolThrown,
   isUndefinedThrown,
-  makeIsInstanceOfThrown,
+  createCatchCondition,
   isInstanceOfErrorThrown,
   isTypeOfObjectThrown,
 } from '../src';
@@ -20,7 +20,7 @@ import tryCatch, {
 describe('tryCatch', () => {
   class CustomError extends Error {}
   class CustomClass {}
-  const isInstanceOfThrown = makeIsInstanceOfThrown(CustomClass);
+  const isInstanceOfThrown = createCatchCondition(CustomClass);
 
   const all = [
     {
